@@ -4,44 +4,104 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.amar.syncchat.ui.auth.AuthViewModel
+import com.amar.syncchat.ui.auth.LoginScreen
+import com.amar.syncchat.ui.auth.RegisterScreen
+import com.amar.syncchat.ui.chat.ChatScreen
+import com.amar.syncchat.ui.contacts.ContactsScreen
+import com.amar.syncchat.ui.navigation.Screen
+import com.amar.syncchat.ui.profile.ProfileScreen
 import com.amar.syncchat.ui.theme.SyncChatTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             SyncChatTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "You can do it...",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                SyncChatNavHost()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun SyncChatNavHost(authViewModel: AuthViewModel = hiltViewModel()) {
+    val navController = rememberNavController()
+    val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SyncChatTheme {
-        Greeting("Android")
+    // Show nothing while checking auth status (DataStore)
+    if (isLoggedIn == null) return
+
+    NavHost(
+        navController = navController,
+        startDestination = if (isLoggedIn == true) Screen.Contacts.route else Screen.Login.route
+    ) {
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) },
+                onLoginSuccess = {
+                    navController.navigate(Screen.Contacts.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Screen.Register.route) {
+            RegisterScreen(
+                onNavigateToLogin = { navController.popBackStack() },
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Contacts.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Screen.Contacts.route) {
+            ContactsScreen(
+                onContactClick = { contact ->
+                    navController.navigate(Screen.Chat.createRoute(contact.id, contact.name))
+                },
+                onProfileClick = {
+                    navController.navigate(Screen.Profile.route)
+                }
+            )
+        }
+        composable(
+            route = Screen.Chat.route,
+            arguments = listOf(
+                navArgument("userId") { type = NavType.StringType },
+                navArgument("userName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            val userName = backStackEntry.arguments?.getString("userName") ?: ""
+            ChatScreen(
+                userId = userId,
+                userName = userName,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.Profile.route) {
+            ProfileScreen(
+                onBackClick = { navController.popBackStack() },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
+        }
     }
 }
