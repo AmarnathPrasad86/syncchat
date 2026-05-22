@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
             SyncChatTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        name = "You can do it...",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
