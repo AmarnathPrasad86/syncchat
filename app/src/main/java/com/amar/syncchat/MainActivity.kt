@@ -17,9 +17,8 @@ import com.amar.syncchat.ui.auth.AuthViewModel
 import com.amar.syncchat.ui.auth.LoginScreen
 import com.amar.syncchat.ui.auth.RegisterScreen
 import com.amar.syncchat.ui.chat.ChatScreen
-import com.amar.syncchat.ui.contacts.ContactsScreen
+import com.amar.syncchat.ui.main.MainScreen
 import com.amar.syncchat.ui.navigation.Screen
-import com.amar.syncchat.ui.profile.ProfileScreen
 import com.amar.syncchat.ui.theme.SyncChatTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -41,18 +40,17 @@ fun SyncChatNavHost(authViewModel: AuthViewModel = hiltViewModel()) {
     val navController = rememberNavController()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
 
-    // Show nothing while checking auth status (DataStore)
     if (isLoggedIn == null) return
 
     NavHost(
         navController = navController,
-        startDestination = if (isLoggedIn == true) Screen.Contacts.route else Screen.Login.route
+        startDestination = if (isLoggedIn == true) "main" else Screen.Login.route
     ) {
         composable(Screen.Login.route) {
             LoginScreen(
                 onNavigateToRegister = { navController.navigate(Screen.Register.route) },
                 onLoginSuccess = {
-                    navController.navigate(Screen.Contacts.route) {
+                    navController.navigate("main") {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
@@ -62,19 +60,21 @@ fun SyncChatNavHost(authViewModel: AuthViewModel = hiltViewModel()) {
             RegisterScreen(
                 onNavigateToLogin = { navController.popBackStack() },
                 onRegisterSuccess = {
-                    navController.navigate(Screen.Contacts.route) {
+                    navController.navigate("main") {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
             )
         }
-        composable(Screen.Contacts.route) {
-            ContactsScreen(
+        composable("main") {
+            MainScreen(
                 onContactClick = { contact ->
-                    navController.navigate(Screen.Chat.createRoute(contact.id, contact.name))
+                    navController.navigate(Screen.Chat.createRoute(contact.id ?: "", contact.name ?: "Unknown"))
                 },
-                onProfileClick = {
-                    navController.navigate(Screen.Profile.route)
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
@@ -91,16 +91,6 @@ fun SyncChatNavHost(authViewModel: AuthViewModel = hiltViewModel()) {
                 userId = userId,
                 userName = userName,
                 onBackClick = { navController.popBackStack() }
-            )
-        }
-        composable(Screen.Profile.route) {
-            ProfileScreen(
-                onBackClick = { navController.popBackStack() },
-                onLogout = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
             )
         }
     }

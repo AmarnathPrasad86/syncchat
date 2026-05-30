@@ -58,7 +58,8 @@ class SocketManager @Inject constructor(
             .setAuth(mapOf("token" to token))
             .build()
 
-        socket = IO.socket("http://10.0.2.2:4000", options)
+        socket = IO.socket("http://10.0.2.2:4000", options)//emulater ke liye static address
+       // socket = IO.socket("http://10.34.107.98:4000/", options)//real device ke liye ip address
 
         socket?.on(Socket.EVENT_CONNECT) {
             println("Socket Connected")

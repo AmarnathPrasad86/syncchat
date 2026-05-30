@@ -1,12 +1,12 @@
 package com.amar.syncchat.data.model
 
 data class Message(
-    val id: String,
-    val senderId: String,
-    val receiverId: String,
-    val message: String,
-    val timestamp: Long,
+    val id: String? = null,
+    val senderId: String? = null,
+    val receiverId: String? = null,
+    val message: String? = null,
+    val timestamp: Long = 0L,
     val isToxic: Boolean = false,
-    val aiSuggestion: String = "",
-    val status: String = "sent"
+    val aiSuggestion: String? = null,
+    val status: String? = "sent"
 )

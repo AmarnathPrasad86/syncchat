@@ -1,9 +1,14 @@
 package com.amar.syncchat.di
 
+import android.content.Context
+// import androidx.room.Room
+// import com.amar.syncchat.data.local.ChatDao
+// import com.amar.syncchat.data.local.ChatDatabase
 import com.amar.syncchat.data.remote.ApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -15,8 +20,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private const val BASE_URL = "http://10.0.2.2:4000/"
-
+    private const val BASE_URL = "http://10.0.2.2:4000/"//
+   // private const val BASE_URL = "http://10.34.107.98:4000/"
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor {
@@ -48,4 +53,22 @@ object AppModule {
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
     }
+
+    /* Commented out Room providers
+    @Provides
+    @Singleton
+    fun provideChatDatabase(@ApplicationContext context: Context): ChatDatabase {
+        return Room.databaseBuilder(
+            context,
+            ChatDatabase::class.java,
+            "sync_chat_db"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatDao(database: ChatDatabase): ChatDao {
+        return database.dao
+    }
+    */
 }

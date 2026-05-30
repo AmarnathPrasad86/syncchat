@@ -13,7 +13,7 @@ interface ApiService {
     suspend fun login(@Body request: LoginRequest): Response<AuthResponse>
 
     @GET("api/auth/profile")
-    suspend fun getProfile(@Header("Authorization") token: String): Response<User>
+    suspend fun getProfile(@Header("Authorization") token: String): Response<ProfileResponse>
 
     @GET("api/chat/contacts")
     suspend fun getContacts(@Header("Authorization") token: String): Response<List<User>>
