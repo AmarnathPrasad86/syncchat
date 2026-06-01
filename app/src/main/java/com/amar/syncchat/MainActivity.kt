@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 fun SyncChatNavHost(authViewModel: AuthViewModel = hiltViewModel()) {
     val navController = rememberNavController()
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState()
-
+    //mac first push
     if (isLoggedIn == null) return
 
     NavHost(
